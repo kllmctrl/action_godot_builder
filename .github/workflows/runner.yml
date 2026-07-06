@@ -40,66 +40,70 @@ on:
           - "lto=full"
 
 jobs:
-  android-build:
-    name: 🤖 Android
-    uses: ./.github/workflows/android_builds.yml
-    with:
-      repo: ${{ inputs.repo }}
-      base-branch: ${{ inputs.base-branch }}
-      tag: ${{ inputs.tag }}
-      lto: ${{ inputs.lto }}
-      module_flags: ${{ inputs.module_flags }}
-      template_module_flags: ${{ inputs.template_module_flags }}
-    secrets: inherit
+  # ============================================================
+  # 只构建 Web，其他平台全部注释
+  # ============================================================
+  # android-build:
+  #   name: 🤖 Android
+  #   uses: ./.github/workflows/android_builds.yml
+  #   with:
+  #     repo: ${{ inputs.repo }}
+  #     base-branch: ${{ inputs.base-branch }}
+  #     tag: ${{ inputs.tag }}
+  #     lto: ${{ inputs.lto }}
+  #     module_flags: ${{ inputs.module_flags }}
+  #     template_module_flags: ${{ inputs.template_module_flags }}
+  #   secrets: inherit
 
-  ios-build:
-    name: 🍏 iOS
-    uses: ./.github/workflows/ios_builds.yml
-    with:
-      repo: ${{ inputs.repo }}
-      base-branch: ${{ inputs.base-branch }}
-      tag: ${{ inputs.tag }}
-      lto: ${{ inputs.lto }}
-      module_flags: ${{ inputs.module_flags }}
-      template_module_flags: ${{ inputs.template_module_flags }}
-    secrets: inherit
+  # ios-build:
+  #   name: 🍏 iOS
+  #   uses: ./.github/workflows/ios_builds.yml
+  #   with:
+  #     repo: ${{ inputs.repo }}
+  #     base-branch: ${{ inputs.base-branch }}
+  #     tag: ${{ inputs.tag }}
+  #     lto: ${{ inputs.lto }}
+  #     module_flags: ${{ inputs.module_flags }}
+  #     template_module_flags: ${{ inputs.template_module_flags }}
+  #   secrets: inherit
 
-  linux-build:
-    name: 🐧 Linux
-    uses: ./.github/workflows/linux_builds.yml
-    with:
-      repo: ${{ inputs.repo }}
-      base-branch: ${{ inputs.base-branch }}
-      tag: ${{ inputs.tag }}
-      lto: ${{ inputs.lto == 'lto=thin' && 'lto=none' || inputs.lto }}
-      module_flags: ${{ inputs.module_flags }}
-      template_module_flags: ${{ inputs.template_module_flags }}
-    secrets: inherit
+  # linux-build:
+  #   name: 🐧 Linux
+  #   uses: ./.github/workflows/linux_builds.yml
+  #   with:
+  #     repo: ${{ inputs.repo }}
+  #     base-branch: ${{ inputs.base-branch }}
+  #     tag: ${{ inputs.tag }}
+  #     lto: ${{ inputs.lto == 'lto=thin' && 'lto=none' || inputs.lto }}
+  #     module_flags: ${{ inputs.module_flags }}
+  #     template_module_flags: ${{ inputs.template_module_flags }}
+  #   secrets: inherit
   
-  macos-build:
-    name: 🍎 macOS
-    uses: ./.github/workflows/macos_builds.yml
-    with:
-      repo: ${{ inputs.repo }}
-      base-branch: ${{ inputs.base-branch }}
-      tag: ${{ inputs.tag }}
-      lto: ${{ inputs.lto }}
-      module_flags: ${{ inputs.module_flags }}
-      template_module_flags: ${{ inputs.template_module_flags }}
-    secrets: inherit
+  # macos-build:
+  #   name: 🍎 macOS
+  #   uses: ./.github/workflows/macos_builds.yml
+  #   with:
+  #     repo: ${{ inputs.repo }}
+  #     base-branch: ${{ inputs.base-branch }}
+  #     tag: ${{ inputs.tag }}
+  #     lto: ${{ inputs.lto }}
+  #     module_flags: ${{ inputs.module_flags }}
+  #     template_module_flags: ${{ inputs.template_module_flags }}
+  #   secrets: inherit
 
-  windows-build:
-    name: 🏁 Windows
-    uses: ./.github/workflows/windows_builds.yml
-    with:
-      repo: ${{ inputs.repo }}
-      base-branch: ${{ inputs.base-branch }}
-      tag: ${{ inputs.tag }}
-      lto: ${{ inputs.lto == 'lto=thin' && 'lto=none' || inputs.lto }}
-      module_flags: ${{ inputs.module_flags }}
-      template_module_flags: ${{ inputs.template_module_flags }}
-    secrets: inherit
+  # windows-build:
+  #   name: 🏁 Windows
+  #   uses: ./.github/workflows/windows_builds.yml
+  #   with:
+  #     repo: ${{ inputs.repo }}
+  #     base-branch: ${{ inputs.base-branch }}
+  #     tag: ${{ inputs.tag }}
+  #     lto: ${{ inputs.lto == 'lto=thin' && 'lto=none' || inputs.lto }}
+  #     module_flags: ${{ inputs.module_flags }}
+  #     template_module_flags: ${{ inputs.template_module_flags }}
+  #   secrets: inherit
 
+  # ===== Web 构建（唯一保留） =====
   web-build:
     name: 🌐 Web
     uses: ./.github/workflows/web_builds.yml
@@ -112,27 +116,26 @@ jobs:
       template_module_flags: ${{ inputs.template_module_flags }}
     secrets: inherit
 
-  release:
-    name: 🚀 Create Release
-    permissions:
-      contents: write
-      actions: read
-      packages: write
-    needs:
-      - android-build
-      - ios-build
-      - linux-build
-      - macos-build
-      - windows-build
-      - web-build
-    uses: ./.github/workflows/release.yml
-    with:
-      base-branch: ${{ inputs.base-branch }}
-      repo: ${{ inputs.repo }}
-      tag: ${{ inputs.tag }}
-      tag_release: ${{ inputs.tag_release }}
-      lto: ${{ inputs.lto }}
-      module_flags: ${{ inputs.module_flags }}
-      template_module_flags: ${{ inputs.template_module_flags }}
-      release_repo: ${{ inputs.release_repo }}
-    secrets: inherit
+  # ============================================================
+  # release 暂时禁用（依赖其他平台产物）
+  # 如需启用，取消注释并保留 web-build 在 needs 中
+  # ============================================================
+  # release:
+  #   name: 🚀 Create Release
+  #   permissions:
+  #     contents: write
+  #     actions: read
+  #     packages: write
+  #   needs:
+  #     - web-build
+  #   uses: ./.github/workflows/release.yml
+  #   with:
+  #     base-branch: ${{ inputs.base-branch }}
+  #     repo: ${{ inputs.repo }}
+  #     tag: ${{ inputs.tag }}
+  #     tag_release: ${{ inputs.tag_release }}
+  #     lto: ${{ inputs.lto }}
+  #     module_flags: ${{ inputs.module_flags }}
+  #     template_module_flags: ${{ inputs.template_module_flags }}
+  #     release_repo: ${{ inputs.release_repo }}
+  #   secrets: inherit
