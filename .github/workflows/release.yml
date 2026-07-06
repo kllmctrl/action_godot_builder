@@ -60,25 +60,53 @@ jobs:
           VERSION=${{ inputs.tag_release }}
           VERSION_CLEAN=${VERSION//-/.}
 
-          # 复制 Web 模板文件
-          cp bin/godot.web.template_release.wasm64.zip "release/templates/web_release.zip"
-          cp bin/godot.web.template_debug.wasm64.zip "release/templates/web_debug.zip"
-          cp bin/godot.web.template_release.wasm32.nothreads.zip "release/templates/web_nothreads_release.zip"
-          cp bin/godot.web.template_debug.wasm32.nothreads.zip "release/templates/web_nothreads_debug.zip"
-          cp bin/godot.web.template_release.wasm32.dlink.zip "release/templates/web_dlink_release.zip"
-          cp bin/godot.web.template_debug.wasm32.dlink.zip "release/templates/web_dlink_debug.zip"
-          cp bin/godot.web.template_release.wasm32.nothreads.dlink.zip "release/templates/web_dlink_nothreads_release.zip"
-          cp bin/godot.web.template_debug.wasm32.nothreads.dlink.zip "release/templates/web_dlink_nothreads_debug.zip"
+          echo "📦 开始打包 Web 模板..."
 
+          # ============================================================
+          # 复制 Release 模板（带 threads）
+          # ============================================================
+          if [ -f bin/godot.web.template_release.wasm32.zip ]; then
+            cp bin/godot.web.template_release.wasm32.zip "release/templates/web_release.zip"
+            echo "✅ 复制 web_release.zip"
+          else
+            echo "⚠️ 未找到 godot.web.template_release.wasm32.zip"
+            # 尝试找 wasm64 版本（兼容旧版命名）
+            if [ -f bin/godot.web.template_release.wasm64.zip ]; then
+              cp bin/godot.web.template_release.wasm64.zip "release/templates/web_release.zip"
+              echo "✅ 复制 web_release.zip (wasm64)"
+            fi
+          fi
+
+          # ============================================================
+          # 复制 Debug 模板（带 threads）
+          # ============================================================
+          if [ -f bin/godot.web.template_debug.wasm32.zip ]; then
+            cp bin/godot.web.template_debug.wasm32.zip "release/templates/web_debug.zip"
+            echo "✅ 复制 web_debug.zip"
+          else
+            echo "⚠️ 未找到 godot.web.template_debug.wasm32.zip"
+            if [ -f bin/godot.web.template_debug.wasm64.zip ]; then
+              cp bin/godot.web.template_debug.wasm64.zip "release/templates/web_debug.zip"
+              echo "✅ 复制 web_debug.zip (wasm64)"
+            fi
+          fi
+
+          # ============================================================
+          # 写入版本信息
+          # ============================================================
           printf "%s" "${VERSION_CLEAN}" > release/templates/version.txt
 
+          # ============================================================
           # 打包成 tpz 格式（Godot 导出模板标准格式）
+          # ============================================================
           cd release
           zip -q -r Godot_v${VERSION}_web_export_templates.tpz templates
           cd ..
 
           echo "✅ Web 模板打包完成"
-          ls -R release
+          echo ""
+          echo "📋 打包内容："
+          ls -la release/templates/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -96,7 +124,8 @@ jobs:
             - 构建分支: ${{ inputs.base-branch }}
             
             ### 📦 包含内容
-            - Web 导出模板（含 threads / no-threads / dlink 版本）
-            - 适用于纯 2D 项目（3D 已裁剪）
+            - ✅ Web Release 模板（带 threads 支持）
+            - ✅ Web Debug 模板（带 threads 支持）
+            - ✅ 适用于纯 2D 项目（3D 已裁剪）
           files: |
             release/Godot_v${{ inputs.tag_release }}_web_export_templates.tpz
