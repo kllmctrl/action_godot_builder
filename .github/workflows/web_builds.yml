@@ -25,7 +25,6 @@ on:
 # Global Settings
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: ${{ inputs.base-branch }}
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no optimize=size use_closure_compiler=yes strict_checks=yes ${{ inputs.module_flags }} use_static_cpp=yes
   EM_VERSION: 4.0.11
@@ -33,42 +32,7 @@ env:
 jobs:
   web-template:
     runs-on: ubuntu-24.04
-    name: ${{ matrix.name }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - name: Template w/ threads (target=template_release, threads=yes, arch=wasm32)
-            target: template_release
-            scons-flags: threads=yes arch=wasm32
-
-          - name: Template w/o threads (target=template_release, threads=no, arch=wasm32)
-            target: template_release
-            scons-flags: threads=no arch=wasm32
-
-          - name: Template w/ threads (target=template_debug, threads=yes, arch=wasm32)
-            target: template_debug
-            scons-flags: threads=yes arch=wasm32
-
-          - name: Template w/o threads (target=template_debug, threads=no, arch=wasm32)
-            target: template_debug
-            scons-flags: threads=no arch=wasm32
-          
-          - name: Template w/ threads (target=template_release, threads=yes, arch=wasm32, dlink_enabled=yes)
-            target: template_release
-            scons-flags: threads=yes arch=wasm32 dlink_enabled=yes
-
-          - name: Template w/o threads (target=template_release, threads=no, arch=wasm32, dlink_enabled=yes)
-            target: template_release
-            scons-flags: threads=no arch=wasm32 dlink_enabled=yes
-
-          - name: Template w/ threads (target=template_debug, threads=yes, arch=wasm32, dlink_enabled=yes)
-            target: template_debug
-            scons-flags: threads=yes arch=wasm32 dlink_enabled=yes
-
-          - name: Template w/o threads (target=template_debug, threads=no, arch=wasm32, dlink_enabled=yes)
-            target: template_debug
-            scons-flags: threads=no arch=wasm32 dlink_enabled=yes
+    name: 🌐 Web Release Template
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -90,7 +54,7 @@ jobs:
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
         with:
-          cache-name: web-${{ matrix.target }}-${{ matrix.scons-flags }}-${{ inputs.lto }}
+          cache-name: web-template-release-threads-${{ inputs.lto }}
         continue-on-error: true
 
       - name: Setup Python and SCons
@@ -99,19 +63,19 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          scons-flags: ${{ env.SCONSFLAGS }} ${{ matrix.scons-flags }} ${{ inputs.lto }} ${{ inputs.template_module_flags }}
+          scons-flags: ${{ env.SCONSFLAGS }} threads=yes arch=wasm32 ${{ inputs.lto }} ${{ inputs.template_module_flags }}
           platform: web
-          target: ${{ matrix.target }}
+          target: template_release
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
         with:
-          cache-name: web-${{ matrix.target }}-${{ matrix.scons-flags }}-${{ inputs.lto }}
+          cache-name: web-template-release-threads-${{ inputs.lto }}
           purge-cache-script: misc/scripts/purge_cache.py
         continue-on-error: true
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: web-${{ matrix.target }}-${{ matrix.scons-flags }}-${{ inputs.lto }}
+          name: web-template-release
           path: bin
