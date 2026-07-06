@@ -70,7 +70,6 @@ jobs:
             echo "✅ 复制 web_release.zip"
           else
             echo "⚠️ 未找到 godot.web.template_release.wasm32.zip"
-            # 尝试找 wasm64 版本（兼容旧版命名）
             if [ -f bin/godot.web.template_release.wasm64.zip ]; then
               cp bin/godot.web.template_release.wasm64.zip "release/templates/web_release.zip"
               echo "✅ 复制 web_release.zip (wasm64)"
@@ -91,14 +90,8 @@ jobs:
             fi
           fi
 
-          # ============================================================
-          # 写入版本信息
-          # ============================================================
           printf "%s" "${VERSION_CLEAN}" > release/templates/version.txt
 
-          # ============================================================
-          # 打包成 tpz 格式（Godot 导出模板标准格式）
-          # ============================================================
           cd release
           zip -q -r Godot_v${VERSION}_web_export_templates.tpz templates
           cd ..
@@ -114,7 +107,7 @@ jobs:
           tag_name: ${{ inputs.tag }}-${{ inputs.tag_release }}_web-only
           name: "Godot Web Only ${{ inputs.tag_release }}"
           repository: ${{ inputs.release_repo != '' && inputs.release_repo || github.repository }}
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           body: |
             ## 🎯 Web Only 导出模板
             
