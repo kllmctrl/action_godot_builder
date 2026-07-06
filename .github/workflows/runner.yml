@@ -103,7 +103,7 @@ jobs:
   #     template_module_flags: ${{ inputs.template_module_flags }}
   #   secrets: inherit
 
-  # ===== Web 构建（唯一保留） =====
+  # ===== Web 构建 =====
   web-build:
     name: 🌐 Web
     uses: ./.github/workflows/web_builds.yml
@@ -116,26 +116,23 @@ jobs:
       template_module_flags: ${{ inputs.template_module_flags }}
     secrets: inherit
 
-  # ============================================================
-  # release 暂时禁用（依赖其他平台产物）
-  # 如需启用，取消注释并保留 web-build 在 needs 中
-  # ============================================================
-  # release:
-  #   name: 🚀 Create Release
-  #   permissions:
-  #     contents: write
-  #     actions: read
-  #     packages: write
-  #   needs:
-  #     - web-build
-  #   uses: ./.github/workflows/release.yml
-  #   with:
-  #     base-branch: ${{ inputs.base-branch }}
-  #     repo: ${{ inputs.repo }}
-  #     tag: ${{ inputs.tag }}
-  #     tag_release: ${{ inputs.tag_release }}
-  #     lto: ${{ inputs.lto }}
-  #     module_flags: ${{ inputs.module_flags }}
-  #     template_module_flags: ${{ inputs.template_module_flags }}
-  #     release_repo: ${{ inputs.release_repo }}
-  #   secrets: inherit
+  # ===== Release（已启用，只依赖 web-build） =====
+  release:
+    name: 🚀 Create Release
+    permissions:
+      contents: write
+      actions: read
+      packages: write
+    needs:
+      - web-build
+    uses: ./.github/workflows/release.yml
+    with:
+      base-branch: ${{ inputs.base-branch }}
+      repo: ${{ inputs.repo }}
+      tag: ${{ inputs.tag }}
+      tag_release: ${{ inputs.tag_release }}
+      lto: ${{ inputs.lto }}
+      module_flags: ${{ inputs.module_flags }}
+      template_module_flags: ${{ inputs.template_module_flags }}
+      release_repo: ${{ inputs.release_repo }}
+    secrets: inherit
